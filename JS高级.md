@@ -1,3 +1,7 @@
+# JS高级
+
+### 原型相关
+
 - **原型**
 
 prototype：每个函数都会创建一个prototype属性，这个属性指向原型对象，该对象包含应该由特定引用类型的实例共享的属性和方法。实际上，这个对象就是通过调用构造函数创建的对象的原型。
@@ -11,4 +15,114 @@ constructor：所有原型对象会自动获得名为constructor的属性，指�
 原型链顶层是Object.prototype,如果没有了就指向null。
 ![8896d2c94eb06236b1522bd5db3f835.jpg](https://cdn.nlark.com/yuque/0/2023/jpeg/38776445/1693925522090-b58a5c60-e1cb-4d05-a9df-8f0fec150356.jpeg#averageHue=%23f9f9f6&clientId=uc79508fb-7a8c-4&from=paste&height=896&id=ua3cd3740&originHeight=1344&originWidth=1080&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=323440&status=done&style=none&taskId=ua08d2467-4ed4-4c88-90ac-f21517e10b7&title=&width=720)
 图中证明每一个函数的默认原型都是Object的一个实例对象，其__proto__指向Object原型，Object函数的prototype指向Object原型，__proto__指向Function函数。
+
+- 继承
+
+  - 组合继承
+
+    ```javascript
+    function Person (name,age) {
+        this.age = age
+        this.name = name
+    }
+    
+    Person.prototype.fn1 = function() {
+        console.log('fn1');
+    }
+    
+    function Child(name,age,height) {
+        Person.call(this,name,age)
+        this.height = height
+    }
+    
+    Child.prototype = new Person()
+    
+    let c1 = new Child("李华",18,190)
+    console.log(c1);
+    ```
+
+    组合式继承可以做到继承父类的属性和方法，但是要调用两次父类，因此会产生性能损耗。
+
+  - 寄生组合继承
+
+    ```javascript
+    function createObject(o) {
+        function Foo() {}
+        Foo.prototype = o
+        return new Foo()
+    }
+    
+    
+    function inherit(subType,superType) {
+        subType.prototype = Object.create(superType.prototype)    //也可以使用createObject()
+        Object.defineProperty(subType.prototype,"constructor",{
+            enumerable:false,
+            configurable:true,
+            writable:true,
+            value:subType
+        })
+    }
+    
+    function Person (name,age) {
+        this.age = age
+        this.name = name
+    }
+    
+    Person.prototype.fn1 = function() {
+        console.log('fn1');
+    }
+    
+    function Child(name,age,height) {
+        Person.call(this,name,age)
+        this.height = height
+    }
+    
+    Child.prototype.studying = function() {
+        console.log("studying~");
+    }
+    
+    inherit(Child,Person)
+    
+    let c2 = new Child("why", 18, 111)
+    
+    ```
+
+    这里只调用了一次SuperType构造函数，减少了性能开销，也解决了subType.prototype上不必要用到的的属性。
+
+  - ES6中的extend关键字实现
+
+  ```javascript
+  class Person {
+      constructor(name) {
+          this.name = name
+      }
+  
+      getName = function() {
+          console.log("我的名字是"+this.name);
+      }
+      static fn1 = function() {
+              console.log('fn1');
+      }
+  }
+  
+  class Child extends Person {
+      constructor(name,age) {
+          super(name)
+          this.age = age
+      }
+  }
+  
+  const c1 = new Child("小明",20)
+  c1.getName()
+  console.log(c1);
+  Person.fn1()
+  Child.fn1()
+  console.log(Child);
+  ```
+
+  
+
+​			
+
+
 
