@@ -14,7 +14,7 @@ constructor：所有原型对象会自动获得名为constructor的属性，指�
 当访问对象的一个属性或方法时，该对象身上不存在该属性方法，就会沿着原型链向上找，直到找到该属性方法。
 原型链顶层是Object.prototype,如果没有了就指向null。
 ![8896d2c94eb06236b1522bd5db3f835.jpg](https://cdn.nlark.com/yuque/0/2023/jpeg/38776445/1693925522090-b58a5c60-e1cb-4d05-a9df-8f0fec150356.jpeg#averageHue=%23f9f9f6&clientId=uc79508fb-7a8c-4&from=paste&height=896&id=ua3cd3740&originHeight=1344&originWidth=1080&originalType=binary&ratio=1.5&rotation=0&showTitle=false&size=323440&status=done&style=none&taskId=ua08d2467-4ed4-4c88-90ac-f21517e10b7&title=&width=720)
-图中证明每一个函数的默认原型都是Object的一个实例对象，其__proto__指向Object原型，Object函数的prototype指向Object原型，__proto__指向Function函数。
+图中证明每一个函数的默认原型都是Object的一个实例对象，其__proto__指向Object原型，Object函数的prototype指向Object原型，__proto__指向Function函数原型。
 
 - 继承
 
@@ -117,12 +117,158 @@ constructor：所有原型对象会自动获得名为constructor的属性，指�
   console.log(c1);
   Person.fn1()
   Child.fn1()
-  console.log(Child);
+  console.log(Child);、
   ```
 
-  
-
-​			
 
 
+- **call()、apply()、bind()**
+
+  - **call()函数**
+
+  - 语法： `function.call(thisArg, arg1, arg2, ...)`。  其中thisArg是要设置为函数执行上下文的对象，也就是this要指向的对象，从第二个参数开始，arg1, arg2, ... 是传递给函数的参数。通过使用call方法，可以将一个对象的方法应用到另一个对象上。
+
+  - ```javascript
+    const person = {
+        name:"alice",
+        getperson:function() {
+            console.log(this); //{name: 'lina', age: 20}
+        }
+    }
+    
+    const person2 = {
+        name:"lina",
+        age:20
+    }
+    
+    person.getperson.call(person2)
+    ```
+
+    
+
+  - 手写call()方法
+
+  - ```javascript
+    Object.prototype._call = function(thisObject,...Arys) {
+        //先判定传入是不是对象
+        //如果是一个null或者undefined，赋值window
+        thisObject = (thisObject === null || thisObject === undefined) ? window:Object(thisObject)
+    
+        Object.defineProperty(thisObject,"fn",{
+            enumerable:false,
+            configurable:true,
+            writable:false,
+            value:this
+        })
+    
+        thisObject.fn(...Arys)
+        //避免污染环境变量
+        delete thisObject.fn
+    }
+    
+    person.getperson._call(person2)
+    ```
+
+    
+
+  - **apply()函数**
+
+  - 语法：`function.apply(thisArg, [argsArray])`。 其中thisArg是要设置为函数执行上下文的对象，也就是this要指向的对象，argsArray是一个包含参数的数组。通过使用apply方法，可以将一个对象的方法应用到另一个对象上，并使用数组作为参数。
+
+  - ```javascript
+    const person = {
+        name:"alice",
+        getperson:function(name,age) {
+            
+            console.log(name,age); //why 20
+        }
+    }
+    
+    const person2 = {
+    }
+    
+    person.getperson.apply(person2,["why",20])
+    ```
+
+    
+
+  - 手写apply()方法
+
+  - ```javascript
+    Object.prototype._apply = function(thisObject,Arys) {
+        //先判定传入是不是对象
+        //如果是一个null或者undefined，赋值window
+        thisObject = (thisObject === null || thisObject === undefined) ? window:Object(thisObject)
+    
+        Object.defineProperty(thisObject,"fn",{
+            enumerable:false,
+            configurable:true,
+            writable:false,
+            value:this
+        })
+    
+        thisObject.fn(...Arys)
+        //避免污染环境变量
+        delete thisObject.fn
+    }
+    
+    person.getperson._apply(person2,["why",20])
+    ```
+
+    
+
+  - **bind()函数**
+
+  - 语法：`function.bind(thisArg, arg1, arg2, ...)`。 其中thisArg是要绑定到函数执行上下文的对象，也就是this要指向的对象，从第二个参数开始，arg1, arg2, ...是传递给函数的参数。与call和apply方法不同，bind方法并不会立即执行函数，而是返回一个新函数，可以稍后调用。这对于事件处理程序和setTimeout函数等场景非常有用。
+
+  - ```javascript
+    const person = {
+        name:"alice",
+        getperson:function(name,age) {
+            
+            console.log(name,age);
+        }
+    }
+    
+    const person2 = {
+    }
+    
+    let p1 = person.getperson.bind(person2,"lihua",21)
+    setTimeout(p1,2000) //2秒后出现 lihua 21
+    ```
+
+    
+
+  - 手写bind()
+
+  - ```javascript
+    Object.prototype._bind = function(thisObject,...Arys) {
+    
+        //先判定传入是不是对象
+        //如果是一个null或者undefined，赋值window
+        thisObject = (thisObject === null || thisObject === undefined) ? window:Object(thisObject)
+    
+        Object.defineProperty(thisObject,"fn",{
+            enumerable:false,
+            configurable:true,
+            writable:false,
+            value:this
+        })
+                
+        return  (...newArgs) => {
+            // var allArgs = otherArgs.concat(newArgs)
+            var allArgs = [...Arys, ...newArgs]
+            thisObject.fn(...allArgs)
+          }
+    }
+    
+    let p1 = person.getperson._bind(person2,"lihua",21)
+    setTimeout(p1,2000)///2秒后出现 lihua 21
+    ```
+
+    
+
+  - 
+
+    
 
