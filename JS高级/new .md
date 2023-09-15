@@ -10,13 +10,19 @@
 手写实现
 
 ```javascript
-function create() {
-    let obj = {}
-    //得到arguments第一项函
-    let Con = [].shift.call(arguments)
-    obj.__proto__ = Con.prototype
-    let res = Con.apply(obj,arguments)
-    return res instanceof Object ? res : obj
+function create(fn , ...args) {
+    //判定是否为函数
+    if(typeof fn !== "function") {
+        throw new Error(`${fn}不为函数`)
+    }
+    
+    const obj = {}
+    
+    obj.__proto__ = Object.create(fn.prototype)
+    
+    let res = fn.apply(obj,args)
+    
+    r(typeof res === "object" && res !== null) || (typeof res === "function") ? res : obj
 }
 ```
 
